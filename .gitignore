@@ -20,3 +20,8 @@ __pycache__/
 .claude
 
 skills-lock.json
+
+# Web app
+webapp/backend/.venv/
+webapp/frontend/node_modules/
+webapp/frontend/dist/
