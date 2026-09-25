@@ -23,5 +23,6 @@ skills-lock.json
 
 # Web app
 webapp/backend/.venv/
+webapp/backend/static/
 webapp/frontend/node_modules/
 webapp/frontend/dist/

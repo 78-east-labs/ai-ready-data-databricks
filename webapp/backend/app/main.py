@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .databricks_client import is_configured
@@ -74,3 +76,22 @@ def get_job(job_id: str):
         "profile": job.profile,
         "results": job.results,
     }
+
+
+# --- Frontend static files (built via `npm run build` in webapp/frontend) ---
+# Registered last so /api/* routes above always take priority over the catch-all.
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+if STATIC_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        candidate = STATIC_DIR / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        index = STATIC_DIR / "index.html"
+        if index.exists():
+            return FileResponse(index)
+        raise HTTPException(404, "frontend not built — run `npm run build` in webapp/frontend")
+

@@ -1,0 +1,7 @@
+# Databricks Apps runtime config — see webapp/README.md for the deploy workflow.
+# Bind a SQL warehouse resource to this app named "sql-warehouse" so this resolves
+# to its warehouse ID (used to build the SQL statement HTTP path).
+command: ["uvicorn", "app.main:app"]
+env:
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
