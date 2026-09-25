@@ -1,0 +1,425 @@
+version: v2
+platform_default: databricks
+
+# Requirement keys, factors and scopes are kept identical to the upstream
+# AI-Ready Data Framework (Snowflake-Labs/ai-ready-data) so profiles and
+# reports stay interoperable. Descriptions are phrased for Databricks where
+# the upstream text named a Snowflake primitive.
+#
+# `placeholders` lists extra substitution values a check may need beyond the
+# standard catalog / schema / asset / column. Defaults are documented in the
+# check file.
+
+requirements:
+
+  # ── clean ──────────────────────────────────────────────────────────────
+
+  categorical_validity:
+    description: Fraction of categorical column values that belong to a declared controlled vocabulary or code set
+    factor: clean
+    scope: column
+    placeholders: [allowed_values]
+    implementations: [databricks]
+
+  cross_column_consistency:
+    description: Fraction of records where logically related columns are mutually consistent per declared cross-column rules
+    factor: clean
+    scope: table
+    placeholders: [consistency_predicate]
+    implementations: [databricks]
+
+  data_completeness:
+    description: Fraction of non-null values across scoped columns (1.0 = no nulls)
+    factor: clean
+    scope: column
+    placeholders: [sample_rows]
+    implementations: [databricks]
+
+  distribution_conformity:
+    description: Fraction of monitored numeric columns whose current distribution stays within the declared drift tolerance of their baseline
+    factor: clean
+    scope: table
+    placeholders: [drift_tolerance]
+    implementations: [databricks]
+
+  encoding_validity:
+    description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
+    factor: clean
+    scope: column
+    implementations: [databricks]
+
+  outlier_prevalence:
+    description: Fraction of records free of values beyond the declared z-score distance from the column mean
+    factor: clean
+    scope: table
+    placeholders: [z_threshold]
+    implementations: [databricks]
+
+  referential_accuracy:
+    description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
+    factor: clean
+    scope: table
+    placeholders: [reference_table, reference_key, reference_column]
+    implementations: [databricks]
+
+  referential_integrity:
+    description: Fraction of foreign-key values (declared or supplied) that resolve to a row in the referenced table
+    factor: clean
+    scope: table
+    implementations: [databricks]
+
+  schema_conformity:
+    description: Fraction of records that conform to the declared schema, including no rescued data from ingestion and values castable to their target type
+    factor: clean
+    scope: column
+    placeholders: [target_type]
+    implementations: [databricks]
+
+  syntactic_validity:
+    description: Fraction of raw records that parse without structural errors (well-formed JSON, valid delimiters, no rescued columns)
+    factor: clean
+    scope: column
+    implementations: [databricks]
+
+  uniqueness:
+    description: Fraction of rows that are unique across scoped key columns (1.0 = no duplicates)
+    factor: clean
+    scope: table
+    placeholders: [key_columns]
+    implementations: [databricks]
+
+  value_range_validity:
+    description: Fraction of numeric column values that fall within declared valid ranges or domain boundaries
+    factor: clean
+    scope: column
+    placeholders: [min_value, max_value]
+    implementations: [databricks]
+
+  # ── compliant ──────────────────────────────────────────────────────────
+
+  access_audit_coverage:
+    description: Fraction of tables read in the window whose reads are visible in the Unity Catalog audit log
+    factor: compliant
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  anonymization_effectiveness:
+    description: Fraction of PII-candidate columns (by name pattern) protected by a column mask
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  bias_testing_coverage:
+    description: Fraction of training datasets with documented statistical bias testing (tag or Lakehouse Monitoring slices)
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  classification:
+    description: Fraction of tables with at least one governance tag applied
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  column_masking:
+    description: Fraction of columns tagged as PII that carry a column mask
+    factor: compliant
+    scope: schema
+    placeholders: [pii_tag_key]
+    implementations: [databricks]
+
+  consent_coverage:
+    description: Fraction of tables holding personal data that declare a legal basis for AI processing
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  demographic_representation:
+    description: Fraction of training datasets with a documented demographic distribution relative to the target population
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  license_compliance:
+    description: Fraction of externally sourced datasets (foreign, shared, or tagged external) with a documented usage license
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  purpose_limitation:
+    description: Fraction of tables that declare permitted AI processing purposes
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  retention_policy:
+    description: Fraction of tables with a declared retention period and a Delta retention configuration consistent with it
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  row_access_policy:
+    description: Fraction of tables protected by a row filter
+    factor: compliant
+    scope: schema
+    implementations: [databricks]
+
+  # ── consumable ─────────────────────────────────────────────────────────
+
+  access_optimization:
+    description: Fraction of large Delta tables with a physical layout strategy (liquid clustering, partitioning, or predictive optimization)
+    factor: consumable
+    scope: schema
+    placeholders: [large_table_bytes]
+    implementations: [databricks]
+
+  batch_throughput_sufficiency:
+    description: Fraction of recent bulk write statements that sustained at least the configured rows-per-second throughput
+    factor: consumable
+    scope: schema
+    placeholders: [min_rows_per_second, lookback_days]
+    implementations: [databricks]
+
+  chunk_readiness:
+    description: Fraction of document tables pre-chunked to sizes aligned with the target context window
+    factor: consumable
+    scope: schema
+    placeholders: [max_chunk_chars]
+    implementations: [databricks]
+
+  embedding_coverage:
+    description: Fraction of text-bearing tables that also hold a pre-computed embedding column
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  embedding_dimension_consistency:
+    description: Fraction of embedding columns whose vectors all share one dimensionality
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  eval_coverage:
+    description: Fraction of data assets with an associated evaluation set (tag, naming convention, or MLflow evaluation dataset)
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  feature_materialization_coverage:
+    description: Fraction of feature tables that are also materialized for online serving (online table or synced table)
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  native_format_availability:
+    description: Fraction of tables stored as Delta or Iceberg rather than formats needing runtime conversion
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  point_lookup_availability:
+    description: Fraction of base tables with a key-friendly layout (liquid clustering, partitioning, or a Bloom filter index)
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  retrieval_recall_compliance:
+    description: Fraction of embedding-bearing tables served by a Vector Search index that is online and in sync
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  search_optimization:
+    description: Fraction of tables with predictive optimization active or a liquid clustering layout maintained by recent OPTIMIZE runs
+    factor: consumable
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  serving_latency_compliance:
+    description: Fraction of recent successful SELECT statements that read tables in the schema and completed within the configured latency threshold (ms)
+    factor: consumable
+    scope: schema
+    placeholders: [latency_threshold_ms, lookback_days]
+    implementations: [databricks]
+
+  vector_index_coverage:
+    description: Fraction of embedding-bearing tables with a Vector Search index built on them
+    factor: consumable
+    scope: schema
+    implementations: [databricks]
+
+  # ── contextual ─────────────────────────────────────────────────────────
+
+  business_glossary_linkage:
+    description: Fraction of columns linked to a business glossary term (tag) or exposed through a Unity Catalog metric view
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  constraint_declaration:
+    description: Fraction of columns declared NOT NULL, covered by a PRIMARY KEY / FOREIGN KEY / CHECK constraint, or documented with a range in their comment
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  entity_identifier_declaration:
+    description: Fraction of tables with a declared PRIMARY KEY constraint
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  relationship_declaration:
+    description: Fraction of tables that participate in at least one declared FOREIGN KEY relationship
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  schema_type_coverage:
+    description: Fraction of columns that carry a semantic-role signal (non-empty comment, tag, or recognizable name pattern) beyond the physical type
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  semantic_documentation:
+    description: Fraction of tables and columns with non-empty comments
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  temporal_scope_declaration:
+    description: Fraction of tables with a declared temporal validity window (effective/valid-time columns or a temporal_scope tag)
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  unit_of_measure_declaration:
+    description: Fraction of numeric columns with an explicit unit of measure (tag or comment)
+    factor: contextual
+    scope: schema
+    implementations: [databricks]
+
+  # ── correlated ─────────────────────────────────────────────────────────
+
+  agent_attribution:
+    description: Fraction of recent writes to the schema attributable to a named job, pipeline, notebook or tagged statement rather than an anonymous session
+    factor: correlated
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  data_provenance:
+    description: Fraction of tables with documented source provenance (source_system and collection_method tags, or an upstream lineage edge)
+    factor: correlated
+    scope: schema
+    implementations: [databricks]
+
+  data_version_coverage:
+    description: Fraction of Delta tables whose time-travel retention covers the required reconstruction window
+    factor: correlated
+    scope: schema
+    placeholders: [min_retention_days]
+    implementations: [databricks]
+
+  dependency_graph_completeness:
+    description: Fraction of tables with both upstream and downstream lineage edges recorded
+    factor: correlated
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  impact_analysis_capability:
+    description: Fraction of tables whose downstream consumers can be enumerated from lineage
+    factor: correlated
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  lineage_completeness:
+    description: Fraction of tables with recorded upstream lineage at both table and column level
+    factor: correlated
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  pipeline_execution_audit:
+    description: Fraction of jobs and pipelines that write to the schema with immutable run records in the Lakeflow system tables
+    factor: correlated
+    scope: schema
+    placeholders: [lookback_days]
+    implementations: [databricks]
+
+  record_level_traceability:
+    description: Fraction of tables with row tracking enabled or an explicit source-record correlation column
+    factor: correlated
+    scope: schema
+    implementations: [databricks]
+
+  transformation_documentation:
+    description: Fraction of derived assets (views, materialized views, streaming tables, pipeline outputs) whose transformation logic is documented
+    factor: correlated
+    scope: schema
+    implementations: [databricks]
+
+  # ── current ────────────────────────────────────────────────────────────
+
+  change_detection:
+    description: Fraction of Delta tables with Change Data Feed enabled
+    factor: current
+    scope: schema
+    implementations: [databricks]
+
+  data_freshness:
+    description: Fraction of tables with a declared freshness SLA whose last write falls inside that window
+    factor: current
+    scope: schema
+    placeholders: [default_sla_hours]
+    implementations: [databricks]
+
+  feature_refresh_compliance:
+    description: Fraction of streaming tables and materialized views whose last successful refresh is within the configured staleness threshold (hours)
+    factor: current
+    scope: schema
+    placeholders: [staleness_hours]
+    implementations: [databricks]
+
+  incremental_update_coverage:
+    description: Fraction of tables whose recent commits are incremental (append, merge, streaming update) rather than full overwrites
+    factor: current
+    scope: schema
+    placeholders: [history_commits]
+    implementations: [databricks]
+
+  point_in_time_correctness:
+    description: Fraction of feature tables that declare a time-series primary key enabling point-in-time joins
+    factor: current
+    scope: schema
+    implementations: [databricks]
+
+  propagation_latency_compliance:
+    description: Fraction of derived tables whose observed lag behind their upstream sources is within the freshness SLA (hours)
+    factor: current
+    scope: schema
+    placeholders: [sla_hours, lookback_days]
+    implementations: [databricks]
+
+  schema_evolution_tracking:
+    description: Fraction of Delta tables whose transaction log retention makes column-level schema history observable for the required window
+    factor: current
+    scope: schema
+    placeholders: [min_history_days]
+    implementations: [databricks]
+
+  temporal_referential_integrity:
+    description: Fraction of records with valid, non-null event timestamps that are neither in the future nor before the declared epoch
+    factor: current
+    scope: table
+    placeholders: [timestamp_column, min_valid_timestamp]
+    implementations: [databricks]
+
+  training_serving_parity:
+    description: Fraction of feature tables whose online copy is produced from the same Unity Catalog table used for training
+    factor: current
+    scope: schema
+    implementations: [databricks]
